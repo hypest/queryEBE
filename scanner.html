@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="https://unpkg.com/html5-qrcode"></script>
+</head>
+<body>
+  <div id="qr-reader" style="width:500px"></div>
+  <script>
+    var resultContainer = document.getElementById('qr-reader-results');
+    function onScanSuccess(decodedText, decodedResult) {
+      google.script.run.getQRCode(decodedText); 
+      google.script.host.close();
+    }
+    var html5QrcodeScanner = new Html5QrcodeScanner("qr-reader", { fps: 10, qrbox: 250 });
+    html5QrcodeScanner.render(onScanSuccess);
+  </script>
+</body>
+</html>
