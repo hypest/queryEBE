@@ -2,7 +2,7 @@ function test() {
   Logger.log(ebeLookup(9786180330199));
 }
 
-let cacheVersion = '2';
+let cacheVersion = '5';
 
 function versionIt(isbn) {
   return `${isbn}.${cacheVersion}`;
@@ -36,7 +36,6 @@ function ebe_request(isbn) {
     'payload' : formData
   };
   let response = UrlFetchApp.fetch('https://isbn.nlg.gr/index.php?lvl=more_results', options);
-  //Logger.log(response.getAllHeaders());
   return response;
 }
 
@@ -50,6 +49,18 @@ function ebe_parse(response) {
   }
 }
 
+function test3() {
+  getImage('9786180330199');
+}
+
+function getImageUrl(isbn) {
+  const url = `https://www.google.com/search?q=${isbn}&source=lnms&tbm=isch`
+  const response = UrlFetchApp.fetch(url);
+  const html = response.getContentText();
+  const cheeriodoc = Cheerio.load(html);
+  return cheeriodoc('img').eq(1).attr('src');
+}
+
 function ebeLookupOne(isbn) {
   if (isbn == "") {
     return;
@@ -59,12 +70,14 @@ function ebeLookupOne(isbn) {
 
   let cached = getCached(isbn);
   if (cached) {
-    Logger.log(`Found ${isbn} in cache: ${cached.title}`);
-    return cached.title;
+    Logger.log(`Found ${isbn} in cache: ${cached.title}, ${cached.imgsrc}`);
+    return Object.values(cached);
   } else {
     let parsed = ebe_parse(ebe_request(isbn))
-    putCache(isbn, parsed);
-    return parsed.title;
+    const result = {...parsed, 'imgsrc': getImageUrl(isbn)};
+    Logger.log(`Caching: ${result.title}, ${result.imgsrc}`);
+    putCache(isbn, result);
+    return Object.values(parsed);
   }
 }
 
